@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Customer Reviews</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1, h2 {
+      color: #333;
+    }
+
+    form {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      width: 100%;
+      max-width: 600px;
+      margin-bottom: 30px;
+    }
+
+    input, textarea, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      margin-top: 15px;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .rating-header {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      text-align: center;
+      width: 100%;
+      max-width: 600px;
+      margin-bottom: 30px;
+    }
+
+    .rating-header h2 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .average-score {
+      font-size: 48px;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    .stars {
+      font-size: 24px;
+      color: #f5b50a;
+    }
+
+    .review {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 15px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.05);
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .review-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+
+    .review-name {
+      font-weight: bold;
+    }
+
+    .review-date {
+      font-size: 0.9em;
+      color: #666;
+    }
+
+    .review-stars {
+      color: #f5b50a;
+      margin-bottom: 8px;
+    }
+
+    #reviews-display {
+      width: 100%;
+      max-width: 600px;
+    }
+  </style>
+</head>
+<body>
+
+  <form id="review-form">
+    <h2>Leave a Review</h2>
+    <input type="text" name="name" placeholder="Your Name" required>
+    <textarea name="review" placeholder="Write your review..." rows="4" required></textarea>
+    <select name="rating" required>
+      <option value="">Select Rating</option>
+      <option value="5">★★★★★ (5)</option>
+      <option value="4">★★★★☆ (4)</option>
+      <option value="3">★★★☆☆ (3)</option>
+      <option value="2">★★☆☆☆ (2)</option>
+      <option value="1">★☆☆☆☆ (1)</option>
+    </select>
+    <button type="submit">Submit Review</button>
+  </form>
+
+  <div class="rating-header">
+    <h2>Overall Rating</h2>
+    <div class="average-score" id="average-rating">0.0</div>
+    <div class="stars" id="star-display">☆☆☆☆☆</div>
+  </div>
+
+  <h2>Customer Reviews</h2>
+  <div id="reviews-display"></div>
+
+  <script>
+    const form = document.getElementById("review-form");
+    const display = document.getElementById("reviews-display");
+
+    function getReviews() {
+      return JSON.parse(localStorage.getItem("reviews") || "[]");
+    }
+
+    function saveReview(review) {
+      const reviews = getReviews();
+      reviews.unshift(review); // newest first
+      localStorage.setItem("reviews", JSON.stringify(reviews));
+    }
+
+    function renderStars(n) {
+      return "★".repeat(n) + "☆".repeat(5 - n);
+    }
+
+    function updateAverageRating() {
+      const reviews = getReviews();
+      if (reviews.length === 0) {
+        document.getElementById("average-rating").innerText = "0.0";
+        document.getElementById("star-display").innerText = "☆☆☆☆☆";
+        return;
+      }
+      const avg = reviews.reduce((sum, r) => sum + parseInt(r.rating), 0) / reviews.length;
+      document.getElementById("average-rating").innerText = avg.toFixed(1);
+      document.getElementById("star-display").innerText = renderStars(Math.round(avg));
+    }
+
+    function renderReviews() {
+      display.innerHTML = "";
+      getReviews().forEach(r => {
+        display.innerHTML += `
+          <div class="review">
+            <div class="review-header">
+              <div class="review-name">${r.name}</div>
+              <div class="review-date">${r.date}</div>
+            </div>
+            <div class="review-stars">${renderStars(r.rating)}</div>
+            <p>${r.review}</p>
+          </div>
+        `;
+      });
+    }
+
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const review = {
+        name: formData.get("name"),
+        review: formData.get("review"),
+        rating: formData.get("rating"),
+        date: new Date().toLocaleDateString()
+      };
+      saveReview(review);
+      renderReviews();
+      updateAverageRating();
+      form.reset();
+    });
+
+    renderReviews();
+    updateAverageRating();
+  </script>
+</body>
+</html>
