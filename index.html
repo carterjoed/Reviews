@@ -127,6 +127,8 @@
       <option value="2">★★☆☆☆ (2)</option>
       <option value="1">★☆☆☆☆ (1)</option>
     </select>
+    <input type="text" name="code" placeholder="Enter your verification code" required>
+
     <button type="submit">Submit Review</button>
   </form>
 
@@ -201,6 +203,14 @@
     form.addEventListener("submit", e => {
       e.preventDefault();
       const formData = new FormData(form);
+      const enteredCode = formData.get("code").trim();
+const validCodes = ["abc123", "def456", "flip999"]; // add real codes here
+
+if (!validCodes.includes(enteredCode)) {
+  alert("Invalid verification code. You must be a customer to leave a review.");
+  return;
+}
+
       const review = {
         name: formData.get("name"),
         review: formData.get("review"),
